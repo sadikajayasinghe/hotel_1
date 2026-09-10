@@ -1,0 +1,29 @@
+package lk.ijse.hotel.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "discounts")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Discount {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String code;
+    private String description;
+    private Double discountPercentage;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private Boolean isActive;
+}

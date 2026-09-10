@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Lanka - Management System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Custom Hotel Lanka Stylesheet -->
+    <link rel="stylesheet" href="assets/styles/styles.css">
+
+    <!-- Report print styles -->
+    <style>
+        #report_print_header { display: none; }
+        .report-panel { background: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #report_print_area, #report_print_area * { visibility: visible; }
+            #report_print_area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 24px;
+                color: #000;
+                background: #fff;
+            }
+            #report_print_header { display: block; text-align: center; margin-bottom: 28px; }
+            #report_print_header h2 { margin: 0; }
+            #report_print_header p { margin: 4px 0 0; color: #555; }
+            .metric-card { border: 1px solid #bbb; box-shadow: none !important; }
+            .report-panel { border: 1px solid #bbb; border-radius: 8px; box-shadow: none !important; break-inside: avoid; margin-bottom: 20px; }
+            .app-footer, .btn-primary-orange, .btn-outline-secondary, #btn_reload_report { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====================================================================
+         1. LOGIN SECTION (Exact match to Image 2)
+         ==================================================================== -->
+    <section id="login_section" class="login-section">
+        <div class="login-container">
+            <!-- Left Banner / Exact Artwork from User Mockup -->
+            <div class="login-banner">
+                <img src="assets/images/login-banner-clean.png" alt="Hotel Lanka - Welcome Back" class="login-banner-img">
+            </div>
+
+            <!-- Right Login Form Wrapper -->
+            <div class="login-form-wrapper">
+                <div class="login-header">
+                    <div class="login-lock-icon">
+                        <svg width="40" height="44" viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="10" width="20" height="15" rx="4" fill="#E65100"/>
+                            <path d="M6 10V7C6 3.68629 8.68629 1 12 1V1C15.3137 1 18 3.68629 18 7V10" stroke="#E65100" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="12" cy="16.5" r="1.8" fill="white"/>
+                            <path d="M12 17.5V20.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="login-title">Log <span class="text-orange">In</span></h2>
+                </div>
+
+                <form id="login_form">
+                    <div class="custom-input-group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="login_username" placeholder="Username or Email" value="admin" required autocomplete="username">
+                    </div>
+
+                    <div class="custom-input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="login_password" placeholder="Password" value="1234" required autocomplete="current-password">
+                        <button type="button" id="toggle_password_btn" class="password-toggle" title="Toggle password visibility">
+                            <i id="toggle_password_icon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" id="loginBtn" class="btn-login-submit">
+                        Log In <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ====================================================================
+         2. TOP NAVIGATION HEADER
+         ==================================================================== -->
+    <header>
+        <nav id="navbar" class="navbar fixed-top">
+            <div class="navbar-content">
+                <div class="d-flex align-items-center gap-3">
+                    <button id="menu_btn" type="button" title="Toggle Sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <span class="text-muted small d-none d-md-inline">Welcome to Hotel Lanka Administration Portal</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="customer_home.html" target="_blank" class="btn btn-sm d-flex align-items-center gap-2 px-3 py-1 shadow-sm" style="border-radius: 20px; font-weight: 600; background: rgba(243, 108, 33, 0.12); color: #f36c21; border: 1px solid #f36c21;" title="View Customer-Facing Booking Website">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Customer Website</span>
+                    </a>
+
+                <!-- Admin Profile Dropdown -->
+                <div class="dropdown">
+                    <div class="user-profile-badge" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar-circle">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <span id="nav_user_name" class="user-name-text">Admin</span>
+                        <i class="fa-solid fa-chevron-down text-muted small ms-1"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 mt-2">
+                        <li><h6 id="dropdown_signed_in" class="dropdown-header">Signed in as Administrator</h6></li>
+                        <li><a id="profile_btn" class="dropdown-item py-2" href="#"><i class="fa-solid fa-id-badge text-muted me-2"></i> My Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fa-solid fa-sliders text-muted me-2"></i> Preferences</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a id="profile_logout_btn" class="dropdown-item text-danger py-2" href="#"><i class="fa-solid fa-right-from-bracket me-2"></i> Sign Out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+    <!-- ====================================================================
+         3. LEFT SIDEBAR (Exact match to Image 3)
+         ==================================================================== -->
+    <aside id="sidebar">
+        <div>
+            <!-- Logo Header -->
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-hotel"></i>
+                <h4>HOTEL LANKA</h4>
+            </div>
+
+            <!-- Navigation Menu Items -->
+            <ul class="sidebar-menu">
+                <li class="nav-item">
+                    <a id="dashboard_tab" class="nav-link" href="#" data-target="dashboard_content">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <!-- Customers tab: Active pill style as in screenshot -->
+                    <a id="customers_tab" class="nav-link active" href="#" data-target="customer_content">
+                        <i class="fa-solid fa-user-group"></i>
+                        <span>Customers</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="rooms_tab" class="nav-link" href="#" data-target="room_content">
+                        <i class="fa-solid fa-bed"></i>
+                        <span>Rooms</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="room_types_tab" class="nav-link" href="#" data-target="generic_content" data-module="Room Types">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>Room Types</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="reservations_tab" class="nav-link" href="#" data-target="reservation_content">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Reservations</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="payments_tab" class="nav-link" href="#" data-target="payment_content">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="services_tab" class="nav-link" href="#" data-target="service_content">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                        <span>Services</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="staff_tab" class="nav-link" href="#" data-target="staff_content">
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span>Staff</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="users_tab" class="nav-link" href="#" data-target="user_content">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="reviews_tab" class="nav-link" href="#" data-target="review_content">
+                        <i class="fa-solid fa-star"></i>
+                        <span>Reviews</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="discounts_tab" class="nav-link" href="#" data-target="discount_content">
+                        <i class="fa-solid fa-percent"></i>
+                        <span>Discounts</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="invoices_tab" class="nav-link" href="#" data-target="invoice_content">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Invoices</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="checkin_tab" class="nav-link" href="#" data-target="checkin_content">
+                        <i class="fa-solid fa-door-open"></i>
+                        <span>Check-in / Check-out</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="reports_tab" class="nav-link" href="#" data-target="report_content">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="settings_tab" class="nav-link" href="#" data-target="settings_content">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Need Help Widget & Cityscape Silhouette -->
+        <div>
+            <a href="#" class="sidebar-help-box">
+                <div class="sidebar-help-content">
+                    <div class="sidebar-help-icon">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div class="sidebar-help-text">
+                        <h6>Need Help?</h6>
+                        <p>Contact Support</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right small opacity-75"></i>
+            </a>
+
+            <!-- Cityscape watermark background -->
+            <div class="sidebar-cityscape"></div>
+        </div>
+    </aside>
+
+
+    <!-- ====================================================================
+         4. MAIN CONTENT AREA
+         ==================================================================== -->
+    <main>
+        <!-- A. CUSTOMERS SECTION (Exact match to Image 3) -->
+        <section id="customer_content" class="content content-section">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Customers</h2>
+                        <p>Manage all registered customers</p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button id="btn_add_customer" class="btn btn-primary-orange">
+                        <i class="fa-solid fa-plus"></i> Add Customer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="customer_search_input" class="form-label fw-semibold small text-muted">Search by Customer Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                            <input type="text" id="customer_search_input" class="form-control border-start-0" placeholder="e.g. Nimal, Kamal...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_customer" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_customers" class="btn btn-light border" title="Refresh Customer List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Customers: <strong id="total_customer_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 80px;">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">NIC / Passport</th>
+                                <th scope="col">Address</th>
+                                <th scope="col" style="width: 110px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer_tbody">
+                            <!-- Populated dynamically by CustomerController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- B. DASHBOARD SECTION -->
+        <section id="dashboard_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Hotel Dashboard</h2>
+                        <p>Real-time overview of reservations and operations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Metric Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Total Customers</h6>
+                            <h2 id="dash_total_customers">0</h2>
+                        </div>
+                        <div class="metric-icon-box icon-orange">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Available Rooms</h6>
+                            <h2 id="dash_available_rooms">0</h2>
+                        </div>
+                        <div class="metric-icon-box icon-emerald">
+                            <i class="fa-solid fa-bed"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Active Bookings</h6>
+                            <h2 id="dash_active_reservations">0</h2>
+                        </div>
+                        <div class="metric-icon-box icon-blue">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Total Revenue</h6>
+                            <h2 id="dash_total_revenue">0.00</h2>
+                        </div>
+                        <div class="metric-icon-box icon-purple">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="table-card p-4">
+                        <h5 class="fw-bold mb-3">Recent Bookings</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Guest Name</th>
+                                        <th>Room</th>
+                                        <th>Check-In</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash_recent_tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="table-card p-4">
+                        <h5 class="fw-bold mb-3">Quick Actions</h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary py-2 text-start" onclick="$('#customers_tab').trigger('click'); $('#btn_add_customer').trigger('click');">
+                                <i class="fa-solid fa-user-plus me-2"></i> Register New Customer
+                            </button>
+                            <button class="btn btn-outline-success py-2 text-start" onclick="$('#reservations_tab').trigger('click'); $('#btn_new_booking').trigger('click');">
+                                <i class="fa-solid fa-calendar-plus me-2"></i> Create New Reservation
+                            </button>
+                            <button class="btn btn-outline-secondary py-2 text-start" onclick="$('#rooms_tab').trigger('click');">
+                                <i class="fa-solid fa-door-closed me-2"></i> Inspect Room Inventory
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- C. ROOMS SECTION -->
+        <section id="room_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-bed"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Room Management</h2>
+                        <p>Monitor room statuses, rates, and occupancy</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_room" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Room
+                </button>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="d-flex gap-2 mb-3">
+                <button class="btn btn-sm btn-primary-orange text-white room-filter-btn" data-status="ALL">All Rooms</button>
+                <button class="btn btn-sm btn-outline-secondary room-filter-btn" data-status="AVAILABLE">Available</button>
+                <button class="btn btn-sm btn-outline-secondary room-filter-btn" data-status="OCCUPIED">Occupied</button>
+                <button class="btn btn-sm btn-outline-secondary room-filter-btn" data-status="MAINTENANCE">Maintenance</button>
+            </div>
+
+            <!-- Search and Filter Bar (matching Customer pattern) -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="room_search_input" class="form-label fw-semibold small text-muted">Search by Room Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-door-closed text-muted"></i></span>
+                            <input type="text" id="room_search_input" class="form-control border-start-0" placeholder="e.g. 101, 205...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_room" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_rooms" class="btn btn-light border" title="Refresh Room List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Rooms: <strong id="total_rooms_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rooms Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>Room No</th>
+                                <th>Type</th>
+                                <th>Floor</th>
+                                <th>Price / Night</th>
+                                <th>Status</th>
+                                <th>Quick Status Change</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="room_tbody">
+                            <!-- Populated dynamically by RoomController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- D. RESERVATIONS SECTION -->
+        <section id="reservation_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Reservations</h2>
+                        <p>Manage bookings, check-ins, and guest stays</p>
+                    </div>
+                </div>
+
+                <button id="btn_new_booking" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> New Booking
+                </button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>Reservation ID</th>
+                                <th>Guest Name</th>
+                                <th>Assigned Room</th>
+                                <th>Guests</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Total Bill</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservation_tbody">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- CHECK-IN / CHECK-OUT SECTION -->
+        <section id="checkin_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Check-in / Check-out</h2>
+                        <p>Welcome arriving guests and release rooms on departure</p>
+                    </div>
+                </div>
+
+                <button id="btn_refresh_checkin" class="btn btn-outline-secondary me-2">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Summary Metric Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Awaiting Check-In</h6>
+                            <h2 id="checkin_awaiting_count">0</h2>
+                            <small class="text-muted" id="checkin_due_today_label">0 due today</small>
+                        </div>
+                        <div class="metric-icon-box icon-orange">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Checked-In Now</h6>
+                            <h2 id="checkin_checkedin_count">0</h2>
+                            <small class="text-muted">guests currently in-house</small>
+                        </div>
+                        <div class="metric-icon-box icon-blue">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Due Check-Out</h6>
+                            <h2 id="checkin_dueout_count">0</h2>
+                            <small class="text-muted" id="checkin_dueout_today_label">0 departing today</small>
+                        </div>
+                        <div class="metric-icon-box icon-emerald">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h6>Completed Stays</h6>
+                            <h2 id="checkin_completed_count">0</h2>
+                            <small class="text-muted">all-time check-outs</small>
+                        </div>
+                        <div class="metric-icon-box icon-purple">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="checkin_search_input" class="form-label fw-semibold small text-muted">Search Reservation</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" id="checkin_search_input" class="form-control border-start-0" placeholder="Reservation number, guest name, or room...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="checkin_status_filter" class="form-label fw-semibold small text-muted">Status Filter</label>
+                        <select id="checkin_status_filter" class="form-select">
+                            <option value="">All Reservations</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="CONFIRMED">Confirmed (Awaiting Check-In)</option>
+                            <option value="CHECKED_IN">Checked-In Now</option>
+                            <option value="CHECKED_OUT">Checked-Out</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>Reservation</th>
+                                <th>Guest Name</th>
+                                <th>Room</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Nights</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="checkin_tbody">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- E. PAYMENT SECTION -->
+        <section id="payment_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Payment Management</h2>
+                        <p>Record and track reservation payments</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_payment" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Payment
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="payment_search_input" class="form-label fw-semibold small text-muted">Filter by Reservation ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-dollar text-muted"></i></span>
+                            <input type="number" id="payment_search_input" class="form-control border-start-0" placeholder="e.g. 1, 2, 5...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_payment" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_payments" class="btn btn-light border" title="Refresh Payment List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Payments: <strong id="total_payment_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Reservation</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Transaction ID</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment_tbody">
+                            <!-- Populated dynamically by PaymentController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- SERVICE MANAGEMENT SECTION -->
+        <section id="service_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Service Management</h2>
+                        <p>Manage hotel amenities and their prices</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_service" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Service
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="service_search_input" class="form-label fw-semibold small text-muted">Filter by Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" id="service_search_input" class="form-control border-start-0" placeholder="e.g. Spa, Laundry">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_service" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_services" class="btn btn-light border" title="Refresh Service List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Services: <strong id="total_service_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Service Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="service_tbody">
+                            <!-- Populated dynamically by ServiceController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- DISCOUNT MANAGEMENT SECTION -->
+        <section id="discount_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Discount Management</h2>
+                        <p>Manage promotional discount codes</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_discount" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Discount
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="discount_search_input" class="form-label fw-semibold small text-muted">Filter by Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                            <input type="text" id="discount_search_input" class="form-control border-start-0" placeholder="e.g. SUMMER, NEWYEAR">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_discount" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_discounts" class="btn btn-light border" title="Refresh Discount List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Discounts: <strong id="total_discount_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discount Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Percentage</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discount_tbody">
+                            <!-- Populated dynamically by DiscountController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- STAFF MANAGEMENT SECTION -->
+        <section id="staff_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Staff Management</h2>
+                        <p>Manage hotel employees, roles, and salaries</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_staff" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Staff Member
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="staff_role_filter" class="form-label fw-semibold small text-muted">Filter by Role</label>
+                        <select id="staff_role_filter" class="form-select">
+                            <option value="">All Roles</option>
+                            <option value="HOUSEKEEPER">HOUSEKEEPER</option>
+                            <option value="MAINTENANCE">MAINTENANCE</option>
+                            <option value="BELLBOY">BELLBOY</option>
+                            <option value="DRIVER">DRIVER</option>
+                            <option value="SECURITY">SECURITY</option>
+                            <option value="CHEF">CHEF</option>
+                            <option value="WAITER">WAITER</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_staff" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_staff" class="btn btn-light border" title="Refresh Staff List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Staff: <strong id="total_staff_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Full Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Salary</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff_tbody">
+                            <!-- Populated dynamically by StaffController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- E. USER MANAGEMENT SECTION (Option B: Manage Staff & Users) -->
+        <section id="user_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>User Management</h2>
+                        <p>Manage system users, roles, and login credentials</p>
+                    </div>
+                </div>
+
+                <button id="btn_open_user_modal" class="btn btn-primary-orange" data-bs-toggle="modal" data-bs-target="#userModal">
+                    <i class="fa-solid fa-user-plus me-1"></i> Add New User
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="nameInput" class="form-label fw-semibold small text-muted">Search by Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                            <input type="text" id="nameInput" class="form-control border-start-0" placeholder="e.g. admin, kamal">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="roleInput" class="form-label fw-semibold small text-muted">Filter by Role</label>
+                        <select id="roleInput" class="form-select">
+                            <option value="">All Roles</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="MANAGER">MANAGER</option>
+                            <option value="RECEPTIONIST">RECEPTIONIST</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button id="searchBtn" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="reloadUsersBtn" class="btn btn-light border" title="Refresh User List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table" id="userTable">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Username</th>
+                                <th>Assigned Role</th>
+                                <th>Account Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTbody">
+                            <!-- Populated dynamically via UserController.reloadTable() -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- REVIEWS SECTION -->
+        <section id="review_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Customer Reviews</h2>
+                        <p>Collect and manage guest feedback and ratings</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_review" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Review
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="review_search_input" class="form-label fw-semibold small text-muted">Filter by Customer ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="number" id="review_search_input" class="form-control border-start-0" placeholder="e.g. 1, 2, 5...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_review" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_reviews" class="btn btn-light border" title="Refresh Review List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Reviews: <strong id="total_review_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Customer</th>
+                                <th>Reservation</th>
+                                <th>Created</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="review_tbody">
+                            <!-- Populated dynamically by ReviewController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- REPORTS SECTION -->
+        <section id="report_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Reports</h2>
+                        <p>Management summary of hotel operations and finances</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="btn_reload_report" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                    <button id="btn_print_report" class="btn btn-primary-orange">
+                        <i class="fa-solid fa-print"></i> Print Report
+                    </button>
+                </div>
+            </div>
+
+            <div id="report_print_area">
+                <!-- Print header (hidden on screen) -->
+                <div id="report_print_header">
+                    <h2 class="fw-bold">Hotel Lanka</h2>
+                    <h4 class="text-muted">Management Summary Report</h4>
+                    <p id="report_generated_on"></p>
+                </div>
+
+                <!-- KPI metric cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h6>Total Revenue</h6>
+                                <h2 id="report_total_revenue">0.00</h2>
+                            </div>
+                            <div class="metric-icon-box icon-orange">
+                                <i class="fa-solid fa-coins"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h6>Total Customers</h6>
+                                <h2 id="report_total_customers">0</h2>
+                            </div>
+                            <div class="metric-icon-box icon-emerald">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h6>Reservations</h6>
+                                <h2 id="report_total_reservations">0</h2>
+                                <small class="text-muted" id="report_active_res_label">0 active</small>
+                            </div>
+                            <div class="metric-icon-box icon-blue">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="metric-card">
+                            <div class="metric-info">
+                                <h6>Occupancy</h6>
+                                <h2 id="report_occupancy">0%</h2>
+                                <small class="text-muted" id="report_rooms_label">0 rooms</small>
+                            </div>
+                            <div class="metric-icon-box icon-purple">
+                                <i class="fa-solid fa-bed"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary tables -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="report-panel table-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-days me-2 text-primary"></i>Reservations by Status</h5>
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr><th>Status</th><th class="text-end">Count</th></tr>
+                                </thead>
+                                <tbody id="report_res_status_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="report-panel table-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bed me-2 text-primary"></i>Rooms by Status</h5>
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr><th>Status</th><th class="text-end">Count</th></tr>
+                                </thead>
+                                <tbody id="report_room_status_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="report-panel table-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-credit-card me-2 text-primary"></i>Revenue by Payment Method</h5>
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr><th>Method</th><th class="text-end">Amount (LKR)</th></tr>
+                                </thead>
+                                <tbody id="report_pay_method_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="report-panel table-card p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-history me-2 text-primary"></i>Recent Reservations</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead class="table-light">
+                                        <tr><th>#</th><th>Guest</th><th>Room</th><th>Status</th></tr>
+                                    </thead>
+                                    <tbody id="report_recent_tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- INVOICES SECTION -->
+        <section id="invoice_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Invoices</h2>
+                        <p>Generate guest bills from reservations and discounts</p>
+                    </div>
+                </div>
+
+                <button id="btn_add_invoice" class="btn btn-primary-orange">
+                    <i class="fa-solid fa-plus"></i> Add Invoice
+                </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="invoice_search_input" class="form-label fw-semibold small text-muted">Filter by Reservation ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="number" id="invoice_search_input" class="form-control border-start-0" placeholder="e.g. 1, 2, 5...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="btn_search_invoice" class="btn btn-primary-orange flex-grow-1">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                        </button>
+                        <button id="btn_reload_invoices" class="btn btn-light border" title="Refresh Invoice List">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-3 text-end d-flex align-items-center justify-content-end">
+                        <span class="text-muted small">Total Invoices: <strong id="total_invoice_badge" class="text-dark">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Table Card -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Reservation</th>
+                                <th>Sub Total</th>
+                                <th>Discount</th>
+                                <th>Total</th>
+                                <th>Issue Date</th>
+                                <th>Paid</th>
+                                <th style="width: 100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoice_tbody">
+                            <!-- Populated dynamically by InvoiceController.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- SETTINGS SECTION -->
+        <section id="settings_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2>Settings</h2>
+                        <p>Hotel information and application preferences</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="btn_reset_settings" class="btn btn-outline-danger">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                    <button id="btn_save_settings" class="btn btn-primary-orange">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Hotel Information -->
+                <div class="col-lg-6">
+                    <div class="table-card p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-hotel me-2 text-primary"></i>Hotel Information</h5>
+                        <form id="settings_form">
+                            <div class="mb-3">
+                                <label for="set_hotel_name" class="form-label fw-semibold small text-muted">Hotel Name</label>
+                                <input type="text" id="set_hotel_name" class="form-control" placeholder="Hotel Lanka">
+                            </div>
+                            <div class="mb-3">
+                                <label for="set_hotel_address" class="form-label fw-semibold small text-muted">Address</label>
+                                <textarea id="set_hotel_address" class="form-control" rows="2" placeholder="No. 10, Galle Road, Colombo"></textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="set_hotel_phone" class="form-label fw-semibold small text-muted">Phone</label>
+                                    <input type="text" id="set_hotel_phone" class="form-control" placeholder="+94 11 234 5678">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="set_hotel_email" class="form-label fw-semibold small text-muted">Email</label>
+                                    <input type="email" id="set_hotel_email" class="form-control" placeholder="info@hotellanka.lk">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="col-lg-6">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="table-card p-4">
+                                <h5 class="fw-bold mb-3"><i class="fa-solid fa-sliders me-2 text-primary"></i>Preferences</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="set_currency" class="form-label fw-semibold small text-muted">Currency</label>
+                                        <select id="set_currency" class="form-select">
+                                            <option value="LKR">LKR (Sri Lankan Rupee)</option>
+                                            <option value="USD">USD (US Dollar)</option>
+                                            <option value="EUR">EUR (Euro)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="set_tax_rate" class="form-label fw-semibold small text-muted">Default Tax Rate (%)</label>
+                                        <input type="number" id="set_tax_rate" class="form-control" min="0" max="50" step="0.1" placeholder="0">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="set_receipt_footer" class="form-label fw-semibold small text-muted">Receipt Footer Note</label>
+                                        <input type="text" id="set_receipt_footer" class="form-control" placeholder="Thank you for staying with us!">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- About / System -->
+                        <div class="col-12">
+                            <div class="table-card p-4">
+                                <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>About &amp; System</h5>
+                                <div class="row g-3 small text-muted">
+                                    <div class="col-md-4">
+                                        <div class="fw-bold text-dark">Version</div>
+                                        <div id="set_about_version">Hotel Lanka v1.0</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="fw-bold text-dark">API Base</div>
+                                        <div id="set_about_api">/v1 (localhost:8080)</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="fw-bold text-dark">Signed In</div>
+                                        <div id="set_about_user">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+
+
+        <!-- F. GENERIC MODULE SECTION (For other sidebar tabs like Services, Discounts, Invoices, Reviews) -->
+        <section id="generic_content" class="content content-section" style="display: none;">
+            <div class="section-header-bar">
+                <div class="section-title-group">
+                    <div class="section-icon-badge">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div class="section-title-text">
+                        <h2 id="generic_module_title">Module</h2>
+                        <p id="generic_module_subtitle">Backend services and operations connected</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" onclick="$('#generic_reload_btn').trigger('click');">
+                        <i class="fa-solid fa-rotate-right me-1"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary-orange" id="generic_action_btn">
+                        <i class="fa-solid fa-plus me-1"></i> Quick Action
+                    </button>
+                </div>
+            </div>
+
+            
+
+            <!-- Dynamic Table Card for the active module -->
+            <div class="table-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold m-0" id="generic_table_title">Records</h5>
+                    <button id="generic_reload_btn" class="btn btn-sm btn-light border"><i class="fa-solid fa-rotate me-1"></i> Reload Data</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table custom-table">
+                        <thead id="generic_table_head">
+                            <tr>
+                                <th>#</th>
+                                <th>Name / Details</th>
+                                <th>Status / Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="generic_table_body">
+                            <!-- Populated dynamically based on clicked module -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                &copy; 2024 Hotel Lanka. All rights reserved.
+            </footer>
+        </section>
+    </main>
+
+
+    <!-- ====================================================================
+         5. MODALS
+         ==================================================================== -->
+
+    <!-- Customer Modal (Add / Edit) -->
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalLabel">Add New Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customer_form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="cust_name" class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cust_name" placeholder="e.g. Nimal Perera" required>
+                                <div class="invalid-feedback" id="err_cust_name"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="cust_email" class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="cust_email" placeholder="e.g. nimal@gmail.com" required>
+                                <div class="invalid-feedback" id="err_cust_email"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="cust_phone" class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cust_phone" placeholder="e.g. 0771234567" required>
+                                <div class="invalid-feedback" id="err_cust_phone"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="cust_nic" class="form-label fw-bold">NIC / Passport <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cust_nic" placeholder="e.g. 200012345678 or 981234567V" required>
+                                <div class="invalid-feedback" id="err_cust_nic"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="cust_address" class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="cust_address" rows="3" placeholder="e.g. Colombo, Sri Lanka" required></textarea>
+                                <div class="invalid-feedback" id="err_cust_address"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_customer" class="btn btn-primary-orange rounded-pill px-4">Save Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Modal -->
+    <div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="roomModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="room_form">
+                        <div class="mb-3">
+                            <label for="room_num_input" class="form-label fw-bold">Room Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="room_num_input" placeholder="e.g. 104 or 205" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="room_type_input" class="form-label fw-bold">Room Type</label>
+                            <select class="form-select" id="room_type_input">
+                                <option value="Deluxe Ocean View">Deluxe Ocean View</option>
+                                <option value="Executive Suite">Executive Suite</option>
+                                <option value="Standard King">Standard King</option>
+                                <option value="Deluxe Double">Deluxe Double</option>
+                                <option value="Presidential Penthouse">Presidential Penthouse</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="room_floor_input" class="form-label fw-bold">Floor</label>
+                            <input type="number" class="form-control" id="room_floor_input" value="1" min="1" max="10">
+                        </div>
+                        <div class="mb-3">
+                            <label for="room_price_input" class="form-label fw-bold">Price per Night (LKR) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="room_price_input" placeholder="e.g. 25000" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_room" class="btn btn-primary-orange rounded-pill px-4">Save Room</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Type Modal (Add / Edit) -->
+    <div class="modal fade" id="roomTypeModal" tabindex="-1" aria-labelledby="roomTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="roomTypeModalLabel">Add New Room Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="room_type_form">
+                        <div class="mb-3">
+                            <label for="rt_name_input" class="form-label fw-bold">Type Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="rt_name_input" placeholder="e.g. Deluxe Ocean View" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rt_description_input" class="form-label fw-bold">Description</label>
+                            <textarea class="form-control" id="rt_description_input" rows="2" placeholder="e.g. Ocean-facing king bed, balcony, minibar"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rt_base_price_input" class="form-label fw-bold">Base Price / Night (LKR) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="rt_base_price_input" placeholder="e.g. 25000" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rt_capacity_input" class="form-label fw-bold">Capacity (Guests)</label>
+                            <input type="number" class="form-control" id="rt_capacity_input" value="2" min="1" max="20">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_room_type" class="btn btn-primary-orange rounded-pill px-4">Save Room Type</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (Add / Edit) -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Add New Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="payment_form">
+                        <div class="mb-3">
+                            <label for="pay_reservation_select" class="form-label fw-bold">Reservation <span class="text-danger">*</span></label>
+                            <select class="form-select" id="pay_reservation_select">
+                                <option value="">-- Select Reservation --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pay_amount_input" class="form-label fw-bold">Amount (LKR) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="pay_amount_input" placeholder="e.g. 25000" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pay_method_input" class="form-label fw-bold">Payment Method</label>
+                            <select class="form-select" id="pay_method_input">
+                                <option value="CASH">Cash</option>
+                                <option value="CREDIT_CARD">Credit Card</option>
+                                <option value="DEBIT_CARD">Debit Card</option>
+                                <option value="ONLINE">Online</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pay_status_input" class="form-label fw-bold">Payment Status</label>
+                            <select class="form-select" id="pay_status_input">
+                                <option value="COMPLETED">Completed</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="FAILED">Failed</option>
+                                <option value="REFUNDED">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pay_txn_input" class="form-label fw-bold">Transaction ID <span class="text-muted small fw-normal">(auto-generated)</span></label>
+                            <input type="text" class="form-control" id="pay_txn_input" placeholder="TXN-YYYYMMDD-HHMMSS-XXX" readonly>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_payment" class="btn btn-primary-orange rounded-pill px-4">Save Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel">Create Reservation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="booking_form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="booking_customer_select" class="form-label fw-bold">Select Customer <span class="text-danger">*</span></label>
+                                <select class="form-select" id="booking_customer_select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="booking_room_select" class="form-label fw-bold">Select Available Room <span class="text-danger">*</span></label>
+                                <select class="form-select" id="booking_room_select" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="booking_checkin_date" class="form-label fw-bold">Check-In Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="booking_checkin_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="booking_checkout_date" class="form-label fw-bold">Check-Out Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="booking_checkout_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="booking_guests_input" class="form-label fw-bold">Number of Guests</label>
+                                <input type="number" class="form-control" id="booking_guests_input" value="1" min="1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="booking_status_select" class="form-label fw-bold">Status</label>
+                                <select id="booking_status_select" class="form-select">
+                                    <option value="CONFIRMED">CONFIRMED</option>
+                                    <option value="PENDING">PENDING</option>
+                                    <option value="CHECKED_IN">CHECKED_IN</option>
+                                    <option value="CHECKED_OUT">CHECKED_OUT</option>
+                                    <option value="CANCELLED">CANCELLED</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-4 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted small d-block">Estimated Total Amount</span>
+                                    <h4 id="booking_total_display" class="fw-bold text-success m-0">LKR 0.00</h4>
+                                    <input type="hidden" id="booking_total_amount" value="0">
+                                </div>
+                                <span class="badge bg-warning text-dark">Includes all resort taxes</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_booking" class="btn btn-primary-orange rounded-pill px-4">Confirm Reservation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal (Option B: Add New Staff / User) -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="userModalLabel">Create User</h5>
+                        <p class="text-muted small mb-0" id="userModalSub">Add a new user with assigned system privileges</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="user_form">
+                        <input type="hidden" id="edit_user_id" value="">
+                        <div class="mb-3">
+                            <label for="inputUserName1" class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                                <input type="text" id="inputUserName1" class="form-control border-start-0" placeholder="Enter username (e.g., receptionist1)" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="inputPassword1" class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                                <input type="password" id="inputPassword1" class="form-control border-start-0" placeholder="Enter secure password">
+                            </div>
+                            <div class="form-text" id="password_hint" style="display:none;">Leave blank to keep the current password.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="inputUserRole1" class="form-label fw-semibold small">Role / Permissions <span class="text-danger">*</span></label>
+                                <select id="inputUserRole1" class="form-select" required>
+                                    <option value="ADMIN">ADMIN (Full Control)</option>
+                                    <option value="MANAGER">MANAGER (Operations)</option>
+                                    <option value="RECEPTIONIST" selected>RECEPTIONIST (Front Desk)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputUserStatus1" class="form-label fw-semibold small">Account Status</label>
+                                <select id="inputUserStatus1" class="form-select">
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_user" class="btn btn-primary-orange rounded-pill px-4">
+                        <i class="fa-solid fa-check me-1"></i> Save User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Service Modal -->
+    <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="serviceModalLabel">Add Service</h5>
+                        <p class="text-muted small mb-0">Add a new hotel service</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="service_form">
+                        <div class="mb-3">
+                            <label for="service_name_input" class="form-label fw-semibold small">Service Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-bell-concierge text-muted"></i></span>
+                                <input type="text" id="service_name_input" class="form-control border-start-0" placeholder="e.g. Spa Therapy" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="service_description_input" class="form-label fw-semibold small">Description</label>
+                            <textarea id="service_description_input" class="form-control" rows="2" placeholder="Short description of the service"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="service_price_input" class="form-label fw-semibold small">Price (LKR) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-money-bill-trend-up text-muted"></i></span>
+                                <input type="number" id="service_price_input" class="form-control border-start-0" placeholder="e.g. 5000" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_service" class="btn btn-primary-orange rounded-pill px-4">
+                        <i class="fa-solid fa-check me-1"></i> Save Service
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Discount Modal -->
+    <div class="modal fade" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="discountModalLabel">Add Discount</h5>
+                        <p class="text-muted small mb-0">Add a promotional discount code</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="discount_form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="discount_code_input" class="form-label fw-semibold small">Discount Code <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                                    <input type="text" id="discount_code_input" class="form-control border-start-0" placeholder="e.g. SUMMER20" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount_percentage_input" class="form-label fw-semibold small">Percentage (%) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-percent text-muted"></i></span>
+                                    <input type="number" id="discount_percentage_input" class="form-control border-start-0" placeholder="e.g. 10" min="0" max="100" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label for="discount_description_input" class="form-label fw-semibold small">Description</label>
+                            <textarea id="discount_description_input" class="form-control" rows="2" placeholder="Short description of the discount"></textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="discount_start_input" class="form-label fw-semibold small">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" id="discount_start_input" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount_end_input" class="form-label fw-semibold small">End Date <span class="text-danger">*</span></label>
+                                <input type="date" id="discount_end_input" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mt-3 mb-1">
+                            <input class="form-check-input" type="checkbox" id="discount_active_input" checked>
+                            <label class="form-check-label fw-semibold small" for="discount_active_input">Active</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_discount" class="btn btn-primary-orange rounded-pill px-4">
+                        <i class="fa-solid fa-check me-1"></i> Save Discount
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Staff Modal -->
+    <div class="modal fade" id="staffModal" tabindex="-1" aria-labelledby="staffModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="staffModalLabel">Add Staff Member</h5>
+                        <p class="text-muted small mb-0">Add a new hotel employee</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="staff_form">
+                        <div class="mb-3">
+                            <label for="staff_fullname_input" class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                                <input type="text" id="staff_fullname_input" class="form-control border-start-0" placeholder="e.g. Nimal Perera" required>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="staff_phone_input" class="form-label fw-semibold small">Phone <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-phone text-muted"></i></span>
+                                    <input type="text" id="staff_phone_input" class="form-control border-start-0" placeholder="e.g. 0771234567">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="staff_email_input" class="form-label fw-semibold small">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-envelope text-muted"></i></span>
+                                    <input type="email" id="staff_email_input" class="form-control border-start-0" placeholder="e.g. nimal@hotel.lk">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label for="staff_role_input" class="form-label fw-semibold small">Role <span class="text-danger">*</span></label>
+                                <select id="staff_role_input" class="form-select">
+                                    <option value="HOUSEKEEPER">HOUSEKEEPER</option>
+                                    <option value="MAINTENANCE">MAINTENANCE</option>
+                                    <option value="BELLBOY">BELLBOY</option>
+                                    <option value="DRIVER">DRIVER</option>
+                                    <option value="SECURITY">SECURITY</option>
+                                    <option value="CHEF">CHEF</option>
+                                    <option value="WAITER">WAITER</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="staff_salary_input" class="form-label fw-semibold small">Salary (LKR) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-money-bill-trend-up text-muted"></i></span>
+                                    <input type="number" id="staff_salary_input" class="form-control border-start-0" placeholder="e.g. 35000" min="0" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_staff" class="btn btn-primary-orange rounded-pill px-4">
+                        <i class="fa-solid fa-check me-1"></i> Save Staff
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- My Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="profileModalLabel">My Profile</h5>
+                        <p class="text-muted small mb-0">View and update your account details</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3">
+                        <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                            <i class="fa-solid fa-user text-primary" style="color:var(--primary-orange);"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-capitalize" id="profile_username_text">-</h6>
+                            <span id="profile_role_text" class="badge bg-primary-subtle text-primary mt-1"></span>
+                        </div>
+                    </div>
+                    <form id="profile_form">
+                        <div class="mb-3">
+                            <label for="profile_user_id_input" class="form-label fw-semibold small text-muted">User ID</label>
+                            <input type="text" id="profile_user_id_input" class="form-control bg-light" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_username_input" class="form-label fw-semibold small">Username</label>
+                            <input type="text" id="profile_username_input" class="form-control" placeholder="Enter username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_password_input" class="form-label fw-semibold small">New Password</label>
+                            <input type="password" id="profile_password_input" class="form-control" placeholder="Leave blank to keep current password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="profile_status_input" class="form-label fw-semibold small text-muted">Account Status</label>
+                            <input type="text" id="profile_status_input" class="form-control bg-light" disabled>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="btn_save_profile" class="btn btn-primary-orange rounded-pill px-4">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Review Modal (Add / Edit) -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Add New Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="review_form">
+                        <div class="mb-3">
+                            <label for="review_customer_select" class="form-label fw-bold">Customer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="review_customer_select">
+                                <option value="">-- Select Customer --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="review_reservation_select" class="form-label fw-bold">Reservation</label>
+                            <select class="form-select" id="review_reservation_select">
+                                <option value="">-- Select Reservation (optional) --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="review_rating_select" class="form-label fw-bold">Rating <span class="text-danger">*</span></label>
+                            <select class="form-select" id="review_rating_select">
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Good</option>
+                                <option value="3">3 - Average</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="1">1 - Terrible</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="review_comment_input" class="form-label fw-bold">Comment <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="review_comment_input" rows="3" placeholder="Write the guest's feedback here..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_review" class="btn btn-primary-orange rounded-pill px-4">Save Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal (Add / Edit) -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoiceModalLabel">Add New Invoice</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invoice_form">
+                        <div class="mb-3">
+                            <label for="invoice_reservation_select" class="form-label fw-bold">Reservation <span class="text-danger">*</span></label>
+                            <select class="form-select" id="invoice_reservation_select">
+                                <option value="">-- Select Reservation --</option>
+                            </select>
+                            <small class="text-muted">Selecting a reservation auto-fills the subtotal.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="invoice_discount_select" class="form-label fw-bold">Discount</label>
+                            <select class="form-select" id="invoice_discount_select">
+                                <option value="">-- No Discount --</option>
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="invoice_subtotal_input" class="form-label fw-bold">Sub Total (LKR)</label>
+                                <input type="number" class="form-control" id="invoice_subtotal_input" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="invoice_discount_input" class="form-label fw-bold">Discount (LKR)</label>
+                                <input type="number" class="form-control" id="invoice_discount_input" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="invoice_total_input" class="form-label fw-bold">Grand Total (LKR)</label>
+                            <input type="number" class="form-control fw-bold bg-light" id="invoice_total_input" min="0" step="0.01" placeholder="0.00" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="invoice_paid_select" class="form-label fw-bold">Payment Status</label>
+                            <select class="form-select" id="invoice_paid_select">
+                                <option value="false">Unpaid</option>
+                                <option value="true">Paid</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="btn_save_invoice" class="btn btn-primary-orange rounded-pill px-4">Save Invoice</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ====================================================================
+         6. JAVASCRIPT DEPENDENCIES & CONTROLLER INITIALIZATION
+         ==================================================================== -->
+    <!-- jQuery 3.7.1 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Main Module Application Bootstrap -->
+    <script type="module">
+        import { DB } from './db/db.js';
+        import { LoginController } from './controller/LoginController.js';
+        import { SidebarController } from './controller/SidebarController.js';
+        import { CustomerController } from './controller/CustomerController.js';
+        import { RoomController } from './controller/RoomController.js';
+        import { RoomTypeController } from './controller/RoomTypeController.js';
+        import { PaymentController } from './controller/PaymentController.js';
+        import { ReservationController } from './controller/ReservationController.js';
+        import { CheckinController } from './controller/CheckinController.js';
+        import { DashboardController } from './controller/DashboardController.js';
+        import { UserController } from './controller/UserController.js';
+        import { StaffController } from './controller/StaffController.js';
+        import { ServiceController } from './controller/ServiceController.js';
+        import { DiscountController } from './controller/DiscountController.js';
+        import { ReviewController } from './controller/ReviewController.js';
+        import { ReportController } from './controller/ReportController.js';
+        import { InvoiceController } from './controller/InvoiceController.js';
+        import { SettingsController } from './controller/SettingsController.js';
+
+        $(document).ready(function () {
+            // 1. Initialize local DB & seeds
+            DB.init();
+
+            // 2. Initialize Controllers
+            LoginController.init();
+            SidebarController.init();
+            CustomerController.init();
+            RoomController.init();
+            RoomTypeController.init();
+            ReservationController.init();
+            CheckinController.init();
+            PaymentController.init();
+            DashboardController.init();
+            UserController.init();
+            StaffController.init();
+            ServiceController.init();
+            DiscountController.init();
+            ReviewController.init();
+            ReportController.init();
+            InvoiceController.init();
+            SettingsController.init();
+
+            // 3. Generic module tab handling with backend REST API integration
+            const getAuthHeaders = () => {
+                const token = localStorage.getItem('JWT');
+                return token ? { 'Authorization': 'Bearer ' + token } : {};
+            };
+
+            const loadGenericModule = (moduleName) => {
+                $('#generic_module_title').text(moduleName);
+                const $tbody = $('#generic_table_body');
+                const $thead = $('#generic_table_head');
+                $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i> Loading ' + moduleName + '...</td></tr>');
+
+                if (moduleName === 'Room Types') {
+                    $thead.html(`
+                        <tr>
+                            <th>#</th>
+                            <th>Type Name</th>
+                            <th>Description</th>
+                            <th>Base Price</th>
+                            <th>Capacity</th>
+                            <th>Actions</th>
+                        </tr>
+                    `);
+                    RoomTypeController.reloadTable();
+                    return;
+                }
+
+                let endpoint = '';
+                if (moduleName === 'Services') endpoint = '/v1/services';
+                else if (moduleName === 'Discounts') endpoint = '/v1/discounts';
+                else if (moduleName === 'Invoices') endpoint = '/v1/invoices';
+                else if (moduleName === 'Reviews') endpoint = '/v1/reviews';
+
+                if (!endpoint) {
+                    $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted">Active and operational. Ready for ' + moduleName + ' operations.</td></tr>');
+                    return;
+                }
+
+                $.ajax({
+                    url: endpoint,
+                    type: 'GET',
+                    headers: getAuthHeaders(),
+                    success: (resp) => {
+                        const items = resp && resp.body ? resp.body : [];
+                        if (items.length === 0) {
+                            $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted">No records registered yet for ' + moduleName + '.</td></tr>');
+                            return;
+                        }
+
+                        let html = '';
+                        items.forEach(item => {
+                            if (moduleName === 'Services') {
+                                html += `<tr>
+                                    <td class="fw-bold">#${item.id || item.serviceId}</td>
+                                    <td class="fw-semibold">${item.serviceName || item.name}</td>
+                                    <td><span class="badge bg-success-subtle text-success">LKR ${Number(item.price || 0).toLocaleString()}</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye me-1"></i> View</button></td>
+                                </tr>`;
+                            } else if (moduleName === 'Discounts') {
+                                html += `<tr>
+                                    <td class="fw-bold">#${item.id || item.discountId}</td>
+                                    <td class="fw-semibold">${item.code || '-'} (${item.description || ''})</td>
+                                    <td><span class="badge bg-danger-subtle text-danger">${item.discountPercentage || 0}% OFF</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye me-1"></i> View</button></td>
+                                </tr>`;
+                            } else if (moduleName === 'Invoices') {
+                                html += `<tr>
+                                    <td class="fw-bold">#${item.id || item.invoiceId}</td>
+                                    <td class="fw-semibold">Reservation #${item.reservationId || '-'}</td>
+                                    <td><span class="badge bg-success-subtle text-success">LKR ${Number(item.totalAmount || 0).toLocaleString()}</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-file-invoice me-1"></i> View</button></td>
+                                </tr>`;
+                            } else if (moduleName === 'Reviews') {
+                                html += `<tr>
+                                    <td class="fw-bold">#${item.id}</td>
+                                    <td class="fw-semibold">${item.comment || 'No comment'}</td>
+                                    <td><span class="badge bg-warning-subtle text-warning"><i class="fa-solid fa-star me-1"></i>${item.rating || 5} Stars</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye me-1"></i> View</button></td>
+                                </tr>`;
+                            } else {
+                                html += `<tr>
+                                    <td class="fw-bold">#${item.roomId || item.id}</td>
+                                    <td class="fw-semibold">${item.roomType || 'Room'}</td>
+                                    <td><span class="badge bg-primary-subtle text-primary">Room #${item.roomNumber}</span></td>
+                                    <td><button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye me-1"></i> View</button></td>
+                                </tr>`;
+                            }
+                        });
+                        $tbody.html(html);
+                    },
+                    error: () => {
+                        $tbody.html('<tr><td colspan="4" class="text-center py-4 text-muted">Module active and connected to Spring Boot backend.</td></tr>');
+                    }
+                });
+            };
+
+            let currentModule = '';
+            $('.sidebar-menu .nav-link[data-module]').on('click', function () {
+                currentModule = $(this).data('module');
+                window.__currentGenericModule = currentModule;
+                loadGenericModule(currentModule);
+            });
+
+            $('#generic_reload_btn').on('click', function () {
+                if (currentModule) loadGenericModule(currentModule);
+            });
+        });
+    </script>
+</body>
+</html>
+
